@@ -28,6 +28,7 @@ from __future__ import unicode_literals
 from bogo.validation import is_valid_combination
 from bogo import utils, accent, mark
 import logging
+from functools import reduce
 
 
 Mark = mark.Mark
@@ -196,9 +197,7 @@ def process_key(string, key,
         key, rules, fallback_sequence)
 
     # Then apply them one by one
-    new_comps = list(comps)
-    for trans in trans_list:
-        new_comps = _transform(new_comps, trans)
+    new_comps = reduce(_transform, trans_list, list(comps))
 
     if new_comps == comps:
         tmp = list(new_comps)
@@ -207,9 +206,9 @@ def process_key(string, key,
         # then this keystroke is probably an undo key.
         if _can_undo(new_comps, trans_list):
             # The prefix "_" means undo.
-            for trans in map(lambda x: "_" + x, trans_list):
-                new_comps = _transform(new_comps, trans)
-
+            new_comps = reduce(_transform,
+                               map(lambda x: "_" + x, trans_list),
+                               new_comps)
             # Undoing the w key with the TELEX input method with the
             # w:<ư extension requires some care.
             #
