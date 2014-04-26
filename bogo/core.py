@@ -270,17 +270,11 @@ def _get_transformation_list(key, im, fallback_sequence):
     if entered key is not in im, return "+key", meaning appending
     the entered key to current text
     """
-    # if key in im:
-    #     lkey = key
-    # else:
-    #     lkey = key.lower()
     lkey = key.lower()
 
     if lkey in im:
-        if isinstance(im[lkey], list):
-            trans_list = im[lkey]
-        else:
-            trans_list = [im[lkey]]
+        # Create a list of possible transformations
+        trans_list = im[lkey] if isinstance(im[lkey], list) else [im[lkey]]
 
         trans_list = list(map (
             lambda trans:
@@ -296,11 +290,7 @@ def _get_transformation_list(key, im, fallback_sequence):
                 t = list(map(lambda x: "_" + x,
                              _get_transformation_list(fallback_sequence[-2], im,
                                                      fallback_sequence[:-1])))
-                # print(t)
                 trans_list = t
-            # else:
-            #     trans_list = ['+' + key]
-
         return trans_list
     else:
         return ['+' + key]
