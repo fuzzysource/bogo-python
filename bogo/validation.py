@@ -142,27 +142,7 @@ def has_valid_vowel_non_final(sound_tuple):
 def has_valid_vowel(sound_tuple):
     # Check our vowel.
     # First remove all accents
-    vowel_wo_accent = accent.remove_accent_string(sound_tuple.vowel)
-
-    def has_valid_vowel_form():
-        return vowel_wo_accent in VOWELS and not \
-            (sound_tuple.last_consonant != '' and
-                vowel_wo_accent in TERMINAL_VOWELS)
-
-    def has_valid_ch_ending():
-        # 'ch' can only go after a, ê, uê, i, uy, oa
-        return not (sound_tuple.last_consonant == 'ch' and
-                    not vowel_wo_accent in {'a', 'ê', 'uê', 'i', 'uy', 'oa'})
-
-    def has_valid_c_ending():
-        # 'c' can't go after 'i' or 'ơ'
-        return not (sound_tuple.last_consonant == 'c' and
-                    vowel_wo_accent in {'i', 'ơ'})
-
-    def has_valid_ng_ending():
-        # 'ng' can't go after i, ơ
-        return not (sound_tuple.last_consonant == 'ng' and
-                    vowel_wo_accent in {'i', 'ơ'})
+    vowel_wo_accent = accent.remove_accent_string(sound_tuple.vowel)    
 
     def has_valid_nh_ending():
         # 'nh' can only go after a, ê, uy, i, oa, quy
@@ -180,13 +160,25 @@ def has_valid_vowel(sound_tuple):
     # Including them may hinder typing freedom and may prevent typing
     # unique local names.
     # FIXME: Config key, anyone?
-    return \
-        has_valid_vowel_form() and \
-        has_valid_ch_ending() and \
-        has_valid_c_ending()
-        # has_valid_ng_ending() and \
-        # has_valid_nh_ending()
 
+    # x is vowel_wo_accent
+    valid_ending_consonant = {
+        'ch': lambda x: x in {'a', 'ê', 'uê', 'i', 'uy', 'oa'},
+        'c': lambda x: not (x in {'i', 'ơ'}),
+        # 'ng': lambda x: not (x in {'i', 'ơ'}),
+        # 'nh': lambda x: x in  {'a', 'ê', 'i', 'uy', 'oa', 'uê', 'y'},
+        # Caution: quynh is valid
+    }
+
+    has_valid_vowel_form = (vowel_wo_accent in VOWELS and not
+                            (sound_tuple.last_consonant != '' and
+                             vowel_wo_accent in TERMINAL_VOWELS))
+
+    return has_valid_vowel_form and (
+        valid_ending_consonant[sound_tuple.last_consonant](vowel_wo_accent)
+        if sound_tuple.last_consonant in valid_ending_consonant
+        else True
+    )
 
 def has_valid_accent(sound_tuple):
     akzent = accent.get_accent_string(sound_tuple.vowel)
